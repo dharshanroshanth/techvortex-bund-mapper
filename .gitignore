@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Large data & weights (not committed — see README for downloads)
+data/
+outputs/
+models/
+*.pt
+*.pth
+*.tif
+*.tiff
+*.zip
+
+# Kaggle staging
+kaggle_push*/
+kaggle_pseudo/
+
+# scratch
+scratch_*
+scripts_make_pseudo.py
+*.log

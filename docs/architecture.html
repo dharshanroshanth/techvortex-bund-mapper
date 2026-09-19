@@ -1,0 +1,331 @@
+<title>Bund Parcel Pipeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#eef2f0; --surface:#ffffff; --surface-2:#f6f9f7;
+    --ink:#16201c; --muted:#586661; --faint:#8b968f;
+    --line:#dde4e0; --line-strong:#c9d2cd;
+    --accent:#2f7d5b; --accent-ink:#215f45;
+    --blue:#3a72b6; --purple:#7a58c0; --teal:#0f9488; --green:#3f9d54; --amber:#b97e22;
+    --radius:14px;
+    --maxw:900px;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1413; --surface:#151d1a; --surface-2:#1a2320;
+      --ink:#e9efec; --muted:#a1afa9; --faint:#77857f;
+      --line:#26312c; --line-strong:#34413b;
+      --accent:#55be8f; --accent-ink:#82d4ad;
+      --blue:#6ba3e0; --purple:#ab8ee2; --teal:#3fbdb0; --green:#5dc072; --amber:#e0a94e;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1413; --surface:#151d1a; --surface-2:#1a2320;
+    --ink:#e9efec; --muted:#a1afa9; --faint:#77857f;
+    --line:#26312c; --line-strong:#34413b;
+    --accent:#55be8f; --accent-ink:#82d4ad;
+    --blue:#6ba3e0; --purple:#ab8ee2; --teal:#3fbdb0; --green:#5dc072; --amber:#e0a94e;
+  }
+
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.65;
+    -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:20px;padding-block:0;}
+  h1,h2,h3{text-wrap:balance;font-weight:600;line-height:1.2;margin:0;}
+  p{margin:0}
+  a{color:var(--accent-ink)}
+
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent-ink);font-weight:500;}
+
+  /* Hero */
+  header{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,var(--surface-2),var(--bg));}
+  .contours{position:absolute;inset:0;opacity:.5;pointer-events:none;color:var(--line-strong);}
+  .hero{position:relative;padding-block:56px 44px;}
+  .hero h1{font-size:clamp(28px,5vw,44px);letter-spacing:-.02em;margin-top:14px;max-width:16ch;}
+  .hero .lede{margin-top:16px;font-size:clamp(16px,2.2vw,19px);color:var(--muted);max-width:56ch;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px;}
+  .chip{font-family:var(--mono);font-size:12px;color:var(--muted);
+    border:1px solid var(--line-strong);border-radius:999px;padding:5px 11px;background:var(--surface);}
+  .chip b{color:var(--ink);font-weight:500}
+
+  section{padding-block:44px;border-bottom:1px solid var(--line);}
+  .sec-head{margin-bottom:22px}
+  .sec-head h2{font-size:clamp(21px,3vw,26px);letter-spacing:-.01em;margin-top:8px}
+  .sec-head p{color:var(--muted);margin-top:8px;max-width:60ch}
+
+  /* Approach split */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .panel .tag{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase}
+  .panel h3{font-size:17px;margin:10px 0 8px}
+  .panel p{color:var(--muted);font-size:15px}
+  .panel.ai .tag{color:var(--purple)}
+  .panel.geo .tag{color:var(--teal)}
+
+  /* Pipeline timeline */
+  .flow{position:relative;margin-top:6px}
+  .flow::before{content:"";position:absolute;left:19px;top:8px;bottom:8px;width:2px;
+    background:var(--line-strong);}
+  .stage{position:relative;display:grid;grid-template-columns:40px 1fr;gap:16px;padding-block:11px}
+  .node{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;
+    display:grid;place-items:center;background:var(--surface);border:2px solid var(--dot,var(--accent));
+    font-family:var(--mono);font-size:14px;font-weight:500;color:var(--dot,var(--accent));}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;transition:border-color .15s,transform .15s}
+  .card:hover{border-color:var(--line-strong);transform:translateX(2px)}
+  .card .t{font-size:16px;font-weight:600}
+  .card .tech{font-family:var(--mono);font-size:12.5px;color:var(--dot,var(--accent));margin-top:3px;
+    display:block;word-break:break-word}
+  .card .note{color:var(--muted);font-size:14.5px;margin-top:7px}
+  .phase-label{grid-column:2;font-family:var(--mono);font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--faint);padding:14px 0 2px}
+
+  .s-blue{--dot:var(--blue)} .s-purple{--dot:var(--purple)}
+  .s-teal{--dot:var(--teal)} .s-green{--dot:var(--green)} .s-amber{--dot:var(--amber)}
+
+  /* Stack rows */
+  .rows{display:flex;flex-direction:column;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .row{display:grid;grid-template-columns:150px 1fr;gap:4px 18px;background:var(--surface);padding:14px 18px}
+  .row .k{font-weight:600;font-size:15px}
+  .row .tool{font-family:var(--mono);font-size:13px;color:var(--accent-ink)}
+  .row .why{color:var(--muted);font-size:14.5px;grid-column:2}
+
+  /* Why list */
+  .why-list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .why-item{display:flex;gap:12px;align-items:flex-start}
+  .why-item .mk{flex:0 0 auto;width:24px;height:24px;border-radius:7px;background:var(--surface-2);
+    border:1px solid var(--line-strong);display:grid;place-items:center;color:var(--accent);margin-top:1px}
+  .why-item p{font-size:15px}
+  .why-item b{font-weight:600}
+
+  footer{padding-block:28px 40px;color:var(--muted);font-size:13.5px}
+  .status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px}
+  .dot-live{width:8px;height:8px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--green) 22%,transparent)}
+
+  @media (max-width:640px){
+    .split,.why-list{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr}
+    .row .why{grid-column:1}
+    .hero{padding-block:40px 32px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header>
+  <svg class="contours" viewBox="0 0 900 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g fill="none" stroke="currentColor" stroke-width="1">
+      <path d="M-20 70 Q180 20 380 75 T780 70 T1000 90"/>
+      <path d="M-20 120 Q200 70 400 125 T820 118 T1000 140"/>
+      <path d="M-20 170 Q160 130 380 175 T800 168 T1000 190"/>
+      <path d="M-20 220 Q220 180 420 224 T860 216 T1000 236"/>
+    </g>
+  </svg>
+  <div class="wrap hero">
+    <span class="eyebrow">TechVortex '26 — AI · Computer Vision · GIS</span>
+    <h1>From a drone photo to land records, automatically.</h1>
+    <p class="lede">Detect the bunds that divide farmland, group them into individual fields, and turn each one into a measured, GPS-anchored parcel — replacing the surveyor who would otherwise walk and measure the land by hand.</p>
+    <div class="chips">
+      <span class="chip"><b>EPSG:3035</b> georeferenced</span>
+      <span class="chip"><b>1 m</b> / pixel</span>
+      <span class="chip">area in <b>ha + acres</b></span>
+      <span class="chip"><b>U-Net</b> · ResNet-34</span>
+      <span class="chip">GeoJSON · GeoPackage · CSV</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">The approach</span>
+      <h2>Let the AI see, let geometry measure.</h2>
+      <p>We split the problem in two — and that division is the whole idea. The network does the one thing only a network can, and exact math does the rest, so nothing about the final numbers is a guess.</p>
+    </div>
+    <div class="split">
+      <div class="panel ai">
+        <span class="tag">Neural network</span>
+        <h3>Recognises the bunds</h3>
+        <p>A segmentation model reads the raw imagery — shadows, crops, hedgerows and all — and marks where the ridge boundaries run, the way a person would spot them by eye.</p>
+      </div>
+      <div class="panel geo">
+        <span class="tag">Deterministic geometry</span>
+        <h3>Closes, locates &amp; measures</h3>
+        <p>Classical geospatial math turns those lines into closed parcels, pins them to real coordinates, and computes exact area. Explainable, not a black box.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">The pipeline</span>
+      <h2>Eight stages, image to export.</h2>
+      <p>Each stage feeds the next. The model is trained offline on real parcel data; everything downstream is deterministic.</p>
+    </div>
+    <div class="flow">
+      <div class="phase-label">Input</div>
+      <div class="stage s-blue">
+        <div class="node">1</div>
+        <div class="card">
+          <div class="t">Drone / aerial imagery</div>
+          <span class="tech">GeoTIFF · RGB · 1 m GSD · EPSG:3035</span>
+          <p class="note">A georeferenced photo of the fields — every pixel maps to a real-world coordinate, which is what makes real GPS and real acres possible.</p>
+        </div>
+      </div>
+      <div class="stage s-blue">
+        <div class="node">2</div>
+        <div class="card">
+          <div class="t">Preprocess</div>
+          <span class="tech">rasterio · tile 512² · normalize</span>
+          <p class="note">Large orthomosaics are cut into tiles the model can handle, and pixel values are normalised.</p>
+        </div>
+      </div>
+
+      <div class="phase-label">Detect</div>
+      <div class="stage s-purple">
+        <div class="node">3</div>
+        <div class="card">
+          <div class="t">Bund detection — the AI</div>
+          <span class="tech">PyTorch · U-Net (ResNet-34 encoder)</span>
+          <p class="note">The network predicts a per-pixel boundary map: where the bunds are. This is the model training on Kaggle right now.</p>
+        </div>
+      </div>
+
+      <div class="phase-label">Geo-process</div>
+      <div class="stage s-teal">
+        <div class="node">4</div>
+        <div class="card">
+          <div class="t">Parcel extraction</div>
+          <span class="tech">distance transform + watershed</span>
+          <p class="note">Bunds are thin and often broken, so a watershed floods each field across the gaps — turning lines into whole, closed parcels. The hard part, done right.</p>
+        </div>
+      </div>
+      <div class="stage s-teal">
+        <div class="node">5</div>
+        <div class="card">
+          <div class="t">Vectorize</div>
+          <span class="tech">shapely · rasterio.features</span>
+          <p class="note">Each field becomes a polygon instead of a blob of pixels.</p>
+        </div>
+      </div>
+      <div class="stage s-teal">
+        <div class="node">6</div>
+        <div class="card">
+          <div class="t">Georeference + area</div>
+          <span class="tech">pyproj · EPSG:3035 (equal-area)</span>
+          <p class="note">Polygons get real latitude/longitude; because the projection is equal-area, area comes out exact in hectares and acres.</p>
+        </div>
+      </div>
+
+      <div class="phase-label">Output</div>
+      <div class="stage s-green">
+        <div class="node">7</div>
+        <div class="card">
+          <div class="t">Overlay + export</div>
+          <span class="tech">GeoJSON · GeoPackage · CSV · PNG</span>
+          <p class="note">GIS-ready files that open straight in QGIS, plus a visual overlay so a human can verify the result at a glance.</p>
+        </div>
+      </div>
+      <div class="stage s-amber">
+        <div class="node">8</div>
+        <div class="card">
+          <div class="t">Web demo</div>
+          <span class="tech">Streamlit</span>
+          <p class="note">Upload an image, watch the boundaries appear, read each parcel's area, and download the data.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">What we're using</span>
+      <h2>The stack, and why each piece.</h2>
+    </div>
+    <div class="rows">
+      <div class="row">
+        <div class="k">Model</div>
+        <div class="tool">PyTorch · segmentation-models-pytorch (U-Net / ResNet-34)</div>
+        <div class="why">The published state of the art for field-boundary delineation; ImageNet-pretrained means high accuracy from little data.</div>
+      </div>
+      <div class="row">
+        <div class="k">Training data</div>
+        <div class="tool">AI4Boundaries — real EU parcels, 1 m</div>
+        <div class="why">Gives labelled bunds and a ground-truth metric, so there's no manual labelling and we can report accuracy.</div>
+      </div>
+      <div class="row">
+        <div class="k">Post-processing</div>
+        <div class="tool">scikit-image (watershed) · SciPy</div>
+        <div class="why">Turns imperfect, broken bund lines into closed fields — where most naive approaches fail.</div>
+      </div>
+      <div class="row">
+        <div class="k">Geospatial</div>
+        <div class="tool">rasterio · shapely · geopandas · pyproj</div>
+        <div class="why">Pixels → GPS polygons → exact area, and export to every standard GIS format.</div>
+      </div>
+      <div class="row">
+        <div class="k">Compute</div>
+        <div class="tool">Kaggle T4 (train) → laptop (inference)</div>
+        <div class="why">A big GPU to train the model, then a self-contained laptop demo with no internet dependency for judging.</div>
+      </div>
+      <div class="row">
+        <div class="k">Interface</div>
+        <div class="tool">Streamlit</div>
+        <div class="why">A live upload-to-result loop the jury can watch in real time.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Why it wins</span>
+      <h2>Explainable, real, and already working.</h2>
+    </div>
+    <div class="why-list">
+      <div class="why-item">
+        <span class="mk">✓</span>
+        <p><b>Explainable.</b> The AI only detects; the measurements are exact geometry, not a model's guess.</p>
+      </div>
+      <div class="why-item">
+        <span class="mk">✓</span>
+        <p><b>Real output.</b> GIS-ready land records that open in QGIS — not just a pretty overlay.</p>
+      </div>
+      <div class="why-item">
+        <span class="mk">✓</span>
+        <p><b>Grounded in research.</b> U-Net boundary delineation is the established approach for exactly this task.</p>
+      </div>
+      <div class="why-item">
+        <span class="mk">✓</span>
+        <p><b>Backed by a number.</b> A validation IoU from the live training run stands behind the claims.</p>
+      </div>
+      <div class="why-item">
+        <span class="mk">✓</span>
+        <p><b>Proven now.</b> Already auto-mapped <b>21 parcels</b> on a real tile — 21.4&nbsp;ha, exact GPS — end to end.</p>
+      </div>
+      <div class="why-item">
+        <span class="mk">✓</span>
+        <p><b>Runs anywhere.</b> Trains on a free GPU, demos offline on a laptop.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span class="status"><span class="dot-live"></span>Pipeline running end-to-end on real data · model training on Kaggle in progress</span>
+    <div style="margin-top:8px">TechVortex '26 — automated farm bund &amp; parcel mapping from drone imagery.</div>
+  </div>
+</footer>

@@ -1,0 +1,17 @@
+numpy
+rasterio
+geopandas
+shapely
+pyproj
+scikit-image
+scipy
+opencv-python-headless
+matplotlib
+streamlit
+pandas
+# deep learning
+torch
+segmentation-models-pytorch
+ultralytics
+# training / data (optional)
+kaggle

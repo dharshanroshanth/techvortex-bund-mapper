@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "bund-mapper",
+      "runtimeExecutable": "F:/techvortex/.venv/Scripts/python.exe",
+      "runtimeArgs": [
+        "-m", "streamlit", "run", "app/streamlit_app.py",
+        "--server.port", "8501",
+        "--server.headless", "true",
+        "--server.address", "localhost",
+        "--browser.gatherUsageStats", "false"
+      ],
+      "port": 8501
+    }
+  ]
+}
