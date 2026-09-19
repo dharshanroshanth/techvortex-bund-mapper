@@ -27,13 +27,20 @@ def load(path: str = WEIGHTS):
     return _MODEL
 
 
-def predict_polygons(rgb: np.ndarray, conf: float = 0.2, imgsz: int = 1024,
-                     path: str = WEIGHTS):
-    """RGB uint8 (H,W,3) -> list of (K,2) field-boundary polygons in pixel (x,y)."""
+def predict_polygons(rgb: np.ndarray, conf: float = 0.2, imgsz: int = None,
+                     path: str = WEIGHTS, augment: bool = False, iou: float = 0.6):
+    """RGB uint8 (H,W,3) -> list of (K,2) field-boundary polygons in pixel (x,y).
+
+    imgsz defaults to the image's own size (rounded to a multiple of 32, clamped
+    to [512, 1280]). Upscaling a small tile to a fixed large size blurs the
+    fields and makes the model miss them, so we match the native resolution.
+    """
     model = load(path)
+    if imgsz is None:
+        imgsz = max(512, min(1280, int(round(max(rgb.shape[:2]) / 32) * 32)))
     bgr = np.ascontiguousarray(rgb[:, :, ::-1])          # ultralytics expects BGR
-    res = model.predict(source=bgr, imgsz=imgsz, conf=conf,
-                        retina_masks=True, verbose=False)
+    res = model.predict(source=bgr, imgsz=imgsz, conf=conf, iou=iou,
+                        retina_masks=True, augment=augment, verbose=False)
     r = res[0]
     if r.masks is None:
         return []

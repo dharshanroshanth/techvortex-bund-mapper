@@ -1,4 +1,4 @@
-# Bund → Parcel Mapper — AI Agricultural Land Parcel & Bund Detection
+# Dossier — AI Agricultural Land Parcel & Bund Detection
 
 **TechVortex '26 · Problem Statement PS06**
 

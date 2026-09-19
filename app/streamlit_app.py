@@ -18,9 +18,9 @@ from src import pipeline, detect, delineate, large_infer  # noqa: E402
 DATA = os.path.join(ROOT, "data", "ai4b")
 OUT = os.path.join(ROOT, "outputs", "app")
 
-st.set_page_config(page_title="Bund -> Parcel Mapper", layout="wide", page_icon="\U0001F33E")
+st.set_page_config(page_title="Dossier", layout="wide", page_icon="\U0001F33E")
 
-st.title("\U0001F33E  Bund \u2192 Parcel Mapper")
+st.title("\U0001F33E  Dossier")
 st.caption(
     "Detect field **bunds** from aerial/drone imagery \u2192 group into individual "
     "**parcels** \u2192 georeferenced GPS polygons \u2192 **area** (ha/acre) \u2192 GIS export. "

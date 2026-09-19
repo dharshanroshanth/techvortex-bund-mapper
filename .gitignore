@@ -21,3 +21,14 @@ kaggle_pseudo/
 scratch_*
 scripts_make_pseudo.py
 *.log
+
+# SAM3 / staging
+sam3_regions/
+sam3ds/
+sam3_sample/
+kaggle_sam3_data/
+scripts_*
+.mcp.json
+.agents/
+.claude/skills/
+skills-lock.json

@@ -18,11 +18,18 @@ random.seed(0); np.random.seed(0); torch.manual_seed(0)
 DEV = "cuda" if torch.cuda.is_available() else "cpu"
 print("Device:", DEV, torch.cuda.get_device_name(0) if DEV == "cuda" else "")
 
-SRC = "/kaggle/input/techvortex-pseudo-tiles/pseudo.zip"
-WORK = "/kaggle/temp/pseudo"; os.makedirs(WORK, exist_ok=True)
-with zipfile.ZipFile(SRC) as z:
-    z.extractall(WORK)
-files = sorted(glob.glob(WORK + "/*.npz")); random.shuffle(files)
+files = sorted(glob.glob("/kaggle/input/**/*.npz", recursive=True))   # anywhere under input
+if not files:
+    print("DEBUG listing /kaggle/input:")
+    for r, d, f in os.walk("/kaggle/input"):
+        print("  ", r, "->", (f[:4] if f else d))
+    zips = glob.glob("/kaggle/input/**/*.zip", recursive=True)
+    if zips:
+        WORK = "/kaggle/temp/pseudo"; os.makedirs(WORK, exist_ok=True)
+        with zipfile.ZipFile(zips[0]) as z:
+            z.extractall(WORK)
+        files = sorted(glob.glob(WORK + "/*.npz"))
+random.shuffle(files)
 print("pseudo-labeled tiles:", len(files))
 nval = max(1, int(len(files) * 0.15))
 val_f, tr_f = files[:nval], files[nval:]

@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dossier</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --bg:#0c1211; --panel:#121a18; --panel2:#18211e; --line:#26312c; --line2:#33403a;
+    --ink:#e9efec; --muted:#9fb0a9; --faint:#6d7c76;
+    --accent:#4fd18b; --accent2:#2f7d5b; --amber:#e0a94e; --blue:#6ba3e0;
+    --mono:"IBM Plex Mono",ui-monospace,monospace; --sans:"IBM Plex Sans",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden}
+  #root{height:100vh;display:flex;flex-direction:column}
+  .topbar{display:flex;align-items:center;gap:14px;padding:12px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#141d1a,#0c1211);flex:0 0 auto}
+  .logo{width:34px;height:34px;border-radius:9px;background:radial-gradient(circle at 30% 30%,var(--accent),var(--accent2));
+    display:grid;place-items:center;font-size:19px}
+  .brand h1{font-size:16px;margin:0;font-weight:600;letter-spacing:-.01em}
+  .brand p{font-size:11.5px;margin:0;color:var(--muted)}
+  .badge{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--accent);
+    border:1px solid var(--accent2);border-radius:999px;padding:4px 11px}
+  .main{flex:1;display:flex;min-height:0}
+  .side{width:340px;flex:0 0 340px;border-right:1px solid var(--line);background:var(--panel);
+    overflow-y:auto;padding:16px}
+  .map-wrap{flex:1;position:relative}
+  #map{position:absolute;inset:0;background:#0c1211}
+  h2.sec{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--faint);
+    font-family:var(--mono);margin:18px 0 8px}
+  h2.sec:first-child{margin-top:0}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;
+    cursor:pointer;transition:.15s;margin-bottom:9px}
+  .card:hover{border-color:var(--line2)}
+  .card.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .card .t{font-size:14px;font-weight:600}
+  .card .m{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .card .row{display:flex;gap:14px;margin-top:8px;font-family:var(--mono);font-size:12px}
+  .card .row b{color:var(--accent);font-weight:600}
+  .card .row span{color:var(--faint)}
+  select,button{font-family:inherit;font-size:13px}
+  select{width:100%;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);
+    border-radius:9px;padding:9px 10px;margin-bottom:8px}
+  .btn{width:100%;background:var(--accent);color:#06140d;border:none;border-radius:9px;padding:10px;
+    font-weight:600;cursor:pointer}
+  .btn:hover{filter:brightness(1.06)} .btn:disabled{opacity:.5;cursor:default}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line2)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:4px 0}
+  .stat{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 12px}
+  .stat .n{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .stat .l{font-size:11px;color:var(--muted);margin-top:1px}
+  .plist{border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .plist .hd{display:grid;grid-template-columns:52px 1fr auto;gap:8px;padding:8px 11px;background:var(--panel2);
+    font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .plist .body{max-height:280px;overflow-y:auto}
+  .prow{display:grid;grid-template-columns:52px 1fr auto;gap:8px;padding:7px 11px;font-size:12.5px;
+    border-top:1px solid var(--line);cursor:pointer;align-items:center}
+  .prow:hover{background:var(--panel2)}
+  .prow.sel{background:color-mix(in srgb,var(--accent) 15%,transparent)}
+  .prow .id{font-family:var(--mono);color:var(--faint)}
+  .prow .ha{font-family:var(--mono);text-align:right;color:var(--accent)}
+  .legend{position:absolute;bottom:16px;left:16px;z-index:500;background:#0c1211d9;border:1px solid var(--line2);
+    border-radius:10px;padding:9px 12px;font-size:11.5px;color:var(--muted);backdrop-filter:blur(6px)}
+  .legend b{color:var(--ink)}
+  .legend .sw{display:inline-block;width:14px;height:10px;border:1.5px solid var(--accent);
+    background:color-mix(in srgb,var(--accent) 22%,transparent);border-radius:2px;margin-right:6px;vertical-align:middle}
+  .loading{position:absolute;inset:0;z-index:600;display:grid;place-items:center;background:#0c1211aa;
+    backdrop-filter:blur(2px);font-family:var(--mono);font-size:13px;color:var(--accent)}
+  .spin{width:26px;height:26px;border:3px solid var(--line2);border-top-color:var(--accent);border-radius:50%;
+    animation:sp .8s linear infinite;margin:0 auto 10px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .leaflet-popup-content-wrapper{background:#0c1211;color:var(--ink);border:1px solid var(--line2);border-radius:10px}
+  .leaflet-popup-tip{background:#0c1211;border:1px solid var(--line2)}
+  .pp b{color:var(--accent)} .pp{font-family:var(--sans);font-size:13px;line-height:1.5}
+  .pp .mono{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .foot{font-size:11px;color:var(--faint);margin-top:12px;line-height:1.5}
+  .side::-webkit-scrollbar,.plist .body::-webkit-scrollbar{width:8px}
+  .side::-webkit-scrollbar-thumb,.plist .body::-webkit-scrollbar-thumb{background:var(--line2);border-radius:4px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+const {useState,useEffect,useRef} = React;
+const html = htm.bind(React.createElement);
+const fmt = n => (n==null||isNaN(n)) ? "—" : Number(n).toLocaleString(undefined,{maximumFractionDigits:1});
+
+function App(){
+  const [catalog,setCatalog] = useState({layers:[],tiles:[]});
+  const [active,setActive] = useState(null);        // {label, geojson, stats}
+  const [tile,setTile] = useState("");
+  const [loading,setLoading] = useState(true);
+  const [parcels,setParcels] = useState([]);        // {id, ha, layer}
+  const [sel,setSel] = useState(null);
+  const mapRef=useRef(null), gjRef=useRef(null);
+
+  // init map once
+  useEffect(()=>{
+    const map = L.map('map',{preferCanvas:true, zoomControl:true}).setView([20,78],4);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {maxZoom:19, attribution:'Esri World Imagery'}).addTo(map);
+    mapRef.current=map;
+    fetch('/api/catalog').then(r=>r.json()).then(c=>{
+      setCatalog(c); if(c.tiles&&c.tiles.length) setTile(c.tiles.find(t=>t.startsWith('ES'))||c.tiles[0]);
+      const drone=c.layers.find(l=>l.key==='drone'&&l.available);
+      if(drone) showLayer(drone); else setLoading(false);
+    });
+  },[]);
+
+  function styleFor(){ return {color:'#4fd18b',weight:1,fillColor:'#4fd18b',fillOpacity:.18}; }
+
+  function renderGeojson(geojson, label, stats){
+    const map=mapRef.current;
+    if(gjRef.current){ map.removeLayer(gjRef.current); gjRef.current=null; }
+    const rows=[];
+    const layer=L.geoJSON(geojson,{
+      style:styleFor,
+      onEachFeature:(f,lyr)=>{
+        const p=f.properties||{};
+        const id=p.parcel_id||p.field_id||rows.length+1;
+        const ha=p.area_ha;
+        lyr.bindPopup(`<div class="pp"><b>Parcel #${id}</b><br><span class="mono">${ha!=null?Number(ha).toFixed(2)+' ha':'area n/a'}${p.lat?` · ${Number(p.lat).toFixed(4)}, ${Number(p.lon).toFixed(4)}`:''}</span></div>`);
+        lyr.on('mouseover',()=>lyr.setStyle({weight:2.5,fillOpacity:.35}));
+        lyr.on('mouseout',()=>lyr.setStyle(styleFor()));
+        lyr.on('click',()=>setSel(id));
+        rows.push({id, ha:ha!=null?Number(ha):null, layer:lyr});
+      }
+    }).addTo(map);
+    gjRef.current=layer;
+    try{ map.fitBounds(layer.getBounds(),{padding:[30,30]}); }catch(e){}
+    rows.sort((a,b)=>(b.ha||0)-(a.ha||0));
+    setParcels(rows); setSel(null);
+    setActive({label, stats});
+    setLoading(false);
+  }
+
+  function showLayer(l){
+    setLoading(true); setSel(null);
+    fetch('/api/geojson/'+l.key).then(r=>r.json())
+      .then(gj=>renderGeojson(gj, l.label, {fields:l.fields, area_ha:l.area_ha}))
+      .catch(()=>setLoading(false));
+  }
+
+  function detect(register=false){
+    if(!tile) return;
+    setLoading(true); setSel(null);
+    fetch('/api/detect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tile, register})})
+      .then(r=>r.json()).then(res=>{
+        if(res.error){ setLoading(false); return; }
+        if(register) {
+           // If we just registered, refresh the catalog to pick up the updated Master Registry
+           fetch('/api/catalog').then(r2=>r2.json()).then(c=>{
+             setCatalog(c);
+             const regLayer = c.layers.find(l=>l.key==='registry');
+             if(regLayer && regLayer.available) showLayer(regLayer);
+             else renderGeojson(res.geojson, 'Live detection · '+tile, res.stats);
+           });
+        } else {
+           renderGeojson(res.geojson, 'Live detection · '+tile, res.stats);
+        }
+      }).catch(()=>setLoading(false));
+  }
+
+  function zoomTo(p){
+    setSel(p.id);
+    try{ mapRef.current.fitBounds(p.layer.getBounds(),{maxZoom:17,padding:[60,60]}); p.layer.openPopup(); }catch(e){}
+  }
+
+  function download(){
+    if(!gjRef.current) return;
+    const blob=new Blob([JSON.stringify(gjRef.current.toGeoJSON())],{type:'application/geo+json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='parcels.geojson'; a.click();
+  }
+
+  const stats=active&&active.stats||{};
+  return html`
+    <div class="topbar">
+      <div class="logo">🌾</div>
+      <div class="brand"><h1>Dossier</h1><p>AI agricultural land parcel & bund detection from drone imagery</p></div>
+      <div class="badge">PS06 · TechVortex '26</div>
+    </div>
+    <div class="main">
+      <div class="side">
+        <h2 class="sec">Surveyed regions</h2>
+        ${catalog.layers.map(l=>html`
+          <div class=${"card"+(active&&active.label===l.label?" active":"")} onClick=${()=>l.available&&showLayer(l)}>
+            <div class="t">${l.label}</div>
+            <div class="m">${l.region} · real orthomosaic</div>
+            <div class="row"><span>fields</span> <b>${fmt(l.fields)}</b> <span>area</span> <b>${fmt(l.area_ha)} ha</b></div>
+          </div>`)}
+
+        <h2 class="sec">Detect a region of the drone survey</h2>
+        <select value=${tile} onChange=${e=>setTile(e.target.value)}>
+          ${catalog.tiles.map(t=>html`<option value=${t}>${t}</option>`)}
+        </select>
+        <button class="btn" onClick=${()=>detect(false)}>Detect parcels (Delineate Anything v2)</button>
+        <button class="btn" style=${{marginTop:'8px', background:'var(--amber)', color:'#0c1211'}} onClick=${()=>detect(true)}>Detect & Register</button>
+
+        <h2 class="sec">Results</h2>
+        <div class="stats">
+          <div class="stat"><div class="n">${fmt(stats.fields)}</div><div class="l">parcels</div></div>
+          <div class="stat"><div class="n">${fmt(stats.area_ha)}</div><div class="l">hectares</div></div>
+        </div>
+        ${active&&html`<button class="btn ghost" style=${{marginBottom:'12px'}} onClick=${download}>⬇ Download GeoJSON</button>`}
+
+        ${parcels.length>0&&html`
+          <h2 class="sec">Parcels (${parcels.length})</h2>
+          <div class="plist">
+            <div class="hd"><div>#</div><div>parcel</div><div>area</div></div>
+            <div class="body">
+              ${parcels.slice(0,400).map(p=>html`
+                <div class=${"prow"+(sel===p.id?" sel":"")} onClick=${()=>zoomTo(p)}>
+                  <div class="id">${p.id}</div><div>Field ${p.id}</div>
+                  <div class="ha">${p.ha!=null?p.ha.toFixed(2):'—'}</div>
+                </div>`)}
+            </div>
+          </div>`}
+
+        <div class="foot">Detected parcels shown as GPS polygons over live satellite imagery. Click a field on the map or in the list for its area & coordinates. Export opens in QGIS or any GIS.</div>
+      </div>
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="legend"><span class="sw"></span><b>Detected parcel</b> — click for area & GPS</div>
+        ${loading&&html`<div class="loading"><div><div class="spin"></div>Detecting parcels…</div></div>`}
+      </div>
+    </div>`;
+}
+ReactDOM.createRoot(document.getElementById('root')).render(html`<${App}/>`);
+</script>
+</body>
+</html>
